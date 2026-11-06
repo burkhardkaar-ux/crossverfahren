@@ -7,10 +7,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 )
 
-// Stabseite repräsentiert ein Feldende an einem Knoten
 type Stabseite struct {
 	Name       string
 	Mu         float64
@@ -21,226 +19,257 @@ type Stabseite struct {
 	OppositeId int
 }
 
-// Knoten gruppiert die Stabseiten
 type Knoten struct {
 	Name    string
 	SeitenI []int
 }
 
-// BerechnungsErgebnis hält die Daten für die HTML-Ausgabe
-type BerechnungsErgebnis struct {
-	Fehler   string
-	Laengen  string
-	Resultat []Stabseite
+type PageData struct {
+	AnzahlFelder int
+	LaengenInput string
+	Berechnet    bool
+	Fehler       string
+	Seiten       []Stabseite
 }
 
-// HTML-Template für die Benutzeroberfläche im Browser
 const htmlTemplate = `
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Cross-Verfahren Durchlaufträger</title>
+    <title>Cross-Verfahren Berechnung</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        h2 { color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { background: #007BFF; color: white; border: none; padding: 10px 15px; cursor: pointer; font-size: 16px; width: 100%; }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; background: #fafafa; color: #333; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { color: #222; border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
+        button { background: #007BFF; color: white; border: none; padding: 12px 20px; cursor: pointer; font-size: 16px; border-radius: 4px; width: 100%; font-weight: bold; }
         button:hover { background: #0056b3; }
-        .error { color: red; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background: #f4f4f4; }
+        .error { color: #721c24; font-weight: bold; background: #f8d7da; padding: 12px; border-radius: 4px; border: 1px solid #f5c6cb; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; background: white; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
+        th { background-color: #007BFF; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .hint { color: #666; font-size: 0.85em; margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
-    <h2>Berechnung eines Durchlaufträgers (Cross-Verfahren)</h2>
-    <p>Konstante Last <strong>q = 10.0 kN/m</strong></p>
-    
-    {{if .Fehler}}<p class="error">{{.Fehler}}</p>{{end}}
+    <div class="card">
+        <h1>Durchlaufträger-Berechnung (Cross-Verfahren)</h1>
+        <p style="color: #666; font-style: italic;">Systembelastung: Konstante Gleichlast q = 10.0 kN/m</p>
 
-    <form method="POST">
-        <div class="form-group">
-            <label for="laengen">Feldlängen in Metern (mit Komma oder Leerzeichen getrennt):</label>
-            <input type="text" id="laengen" name="laengen" value="{{.Laengen}}" placeholder="z.B. 4.5, 6.0, 5.2">
-        </div>
-        <button type="submit">Berechnen</button>
-    </form>
-
-    {{if .Resultat}}
-    <h3>Ergebnis:</h3>
-    <table>
-        <tr>
-            <th>Stabseite</th>
-            <th>µ (Verteilwert)</th>
-            <th>Stützmoment (kNm)</th>
-        </tr>
-        {{range .Resultat}}
-        <tr>
-            <td>{{.Name}}</td>
-            <td>{{printf "%.2f" .Mu}}</td>
-            <td>{{printf "%.2f" .MTotal}}</td>
-        </tr>
+        {{if .Fehler}}
+            <div class="error">{{.Fehler}}</div>
         {{end}}
-    </table>
-    {{end}}
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="felder">Anzahl der Felder:</label>
+                <input type="number" id="felder" name="felder" value="{{if .AnzahlFelder}}{{.AnzahlFelder}}{{else}}3{{end}}" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="laengen">Feldlängen in Metern (mit Komma getrennt):</label>
+                <input type="text" id="laengen" name="laengen" value="{{.LaengenInput}}" placeholder="z.B. 4.5, 6.0, 4.5" required>
+                <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
+            </div>
+            <button type="submit">Berechnung starten</button>
+        </form>
+
+        {{if .Berechnet}}
+            <h2>Ergebnisse der Iteration:</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Stabseite</th>
+                        <th>Verteilungszahl (µ)</th>
+                        <th>Stützmoment (kNm)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Seiten}}
+                    <tr>
+                        <td><strong>{{.Name}}</strong></td>
+                        <td>{{printf "%.2f" .Mu}}</td>
+                        <td>{{printf "%.2f" .MTotal}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        {{end}}
+    </div>
 </body>
 </html>
 `
 
 func main() {
-	tmpl := template.Must(template.New("cross").Parse(htmlTemplate))
+	tmpl := template.Must(template.New("index").Parse(htmlTemplate))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			tmpl.Execute(w, BerechnungsErgebnis{})
-			return
-		}
+		data := PageData{}
 
-		rawLaengen := r.FormValue("laengen")
-		// Ersetze Kommas durch Leerzeichen und teile den String auf
-		cleanString := strings.ReplaceAll(rawLaengen, ",", " ")
-		fields := strings.Fields(cleanString)
+		if r.Method == http.MethodPost {
+			anzahlStr := r.FormValue("felder")
+			laengenStr := r.FormValue("laengen")
+			data.LaengenInput = laengenStr
 
-		if len(fields) == 0 {
-			tmpl.Execute(w, BerechnungsErgebnis{Fehler: "Bitte gib mindestens eine Feldlänge ein.", Laengen: rawLaengen})
-			return
-		}
-
-		var laengen []float64
-		for _, f := range fields {
-			val, err := strconv.ParseFloat(f, 64)
-			if err != nil || val <= 0 {
-				tmpl.Execute(w, BerechnungsErgebnis{Fehler: "Ungültige Feldlänge eingegeben. Nur positive Zahlen erlaubt.", Laengen: rawLaengen})
+			anzahl, err := strconv.Atoi(anzahlStr)
+			if err != nil || anzahl < 1 {
+				data.Fehler = "Ungültige Anzahl an Feldern."
+				tmpl.Execute(w, data)
 				return
 			}
-			laengen = append(laengen, val)
-		}
+			data.AnzahlFelder = anzahl
 
-		anzahlFelder := len(laengen)
-		const q = 10.0
-		anzahlSeiten := anzahlFelder * 2
-		seiten := make([]Stabseite, anzahlSeiten)
-		kSteifigkeit := make([]float64, anzahlSeiten)
-
-		// HIER FOLGT DEINE ORIGINALE MATHEMATISCHE LOGIK
-		for i := 0; i < anzahlFelder; i++ {
-			l := laengen[i]
-			leftIdx := i * 2
-			rightIdx := i*2 + 1
-
-			charLinks := string(rune('A' + i))
-			charRechts := string(rune('A' + i + 1))
-			seiten[leftIdx].Name = fmt.Sprintf("%s-rechts", charLinks)
-			seiten[rightIdx].Name = fmt.Sprintf("%s-links", charRechts)
-
-			seiten[leftIdx].OppositeId = rightIdx
-			seiten[rightIdx].OppositeId = leftIdx
-
-			if i == 0 {
-				kSteifigkeit[leftIdx] = 0.75 * (1.0 / l)
-				kSteifigkeit[rightIdx] = 0.75 * (1.0 / l)
-				seiten[leftIdx].M0 = 0.0
-				seiten[rightIdx].M0 = (q * l * l) / 8.0
-			} else if i == anzahlFelder-1 {
-				kSteifigkeit[leftIdx] = 0.75 * (1.0 / l)
-				kSteifigkeit[rightIdx] = 0.75 * (1.0 / l)
-				seiten[leftIdx].M0 = -(q * l * l) / 8.0
-				seiten[rightIdx].M0 = 0.0
-			} else {
-				kSteifigkeit[leftIdx] = 1.0 / l
-				kSteifigkeit[rightIdx] = 1.0 / l
-				seiten[leftIdx].M0 = -(q * l * l) / 12.0
-				seiten[rightIdx].M0 = (q * l * l) / 12.0
+			laengen := []float64{}
+			var aktuellesZahl string
+			
+			for _, char := range laengenStr + "," {
+				if char == ',' || char == ';' || char == ' ' {
+					if aktuellesZahl != "" {
+						val, err := strconv.ParseFloat(aktuellesZahl, 64)
+						if err != nil || val <= 0 {
+							data.Fehler = fmt.Sprintf("Ungültige Länge eingegeben: %s", aktuellesZahl)
+							tmpl.Execute(w, data)
+							return
+						}
+						laengen = append(laengen, val)
+						aktuellesZahl = ""
+					}
+				} else {
+					aktuellesZahl += string(char)
+				}
 			}
-		}
 
-		if anzahlFelder == 1 {
-			seiten[0].M0 = 0
-			seiten[1].M0 = 0
-		}
-
-		anzahlKnoten := anzahlFelder + 1
-		knoten := make([]Knoten, anzahlKnoten)
-
-		for i := 0; i < anzahlKnoten; i++ {
-			knoten[i].Name = string(rune('A' + i))
-			if i == 0 {
-				knoten[i].SeitenI = []int{0}
-				seiten[0].Mu = 1.0
-			} else if i == anzahlKnoten-1 {
-				knoten[i].SeitenI = []int{anzahlSeiten - 1}
-				seiten[anzahlSeiten-1].Mu = 1.0
-			} else {
-				idxLinks := (i * 2) - 1
-				idxRechts := i * 2
-				knoten[i].SeitenI = []int{idxLinks, idxRechts}
-				sumK := kSteifigkeit[idxLinks] + kSteifigkeit[idxRechts]
-				seiten[idxLinks].Mu = kSteifigkeit[idxLinks] / sumK
-				seiten[idxRechts].Mu = kSteifigkeit[idxRechts] / sumK
+			if len(laengen) != anzahl {
+				data.Fehler = fmt.Sprintf("Eingegebene Längen (%d) stimmen nicht mit der Feldanzahl (%d) überein.", len(laengen), anzahl)
+				tmpl.Execute(w, data)
+				return
 			}
-		}
 
-		for i := range seiten {
-			seiten[i].MTotal = seiten[i].M0
-		}
+			const q = 10.0
+			anzahlSeiten := anzahl * 2
+			seiten := make([]Stabseite, anzahlSeiten)
+			kSteifigkeit := make([]float64, anzahlSeiten)
 
-		maxIterationen := 20
-		epsilon := 0.001
+			for i := 0; i < anzahl; i++ {
+				l := laengen[i]
+				leftIdx := i * 2
+				rightIdx := i*2 + 1
 
-		for iter := 1; iter <= maxIterationen; iter++ {
-			groessteAenderung := 0.0
-			for _, k := range knoten {
-				knotenSumme := 0.0
-				for _, idx := range k.SeitenI {
-					if iter == 1 {
-						knotenSumme += seiten[idx].M0
-					} else {
-						knotenSumme += seiten[idx].MOver
+				charLinks := string(rune('A' + i))
+				charRechts := string(rune('A' + i + 1))
+				seiten[leftIdx].Name = fmt.Sprintf("%s-rechts", charLinks)
+				seiten[rightIdx].Name = fmt.Sprintf("%s-links", charRechts)
+
+				seiten[leftIdx].OppositeId = rightIdx
+				seiten[rightIdx].OppositeId = leftIdx
+
+				if i == 0 {
+					kSteifigkeit[leftIdx] = 0.75 * (1.0 / l)
+					kSteifigkeit[rightIdx] = 0.75 * (1.0 / l)
+					seiten[leftIdx].M0 = 0.0
+					seiten[rightIdx].M0 = (q * l * l) / 8.0
+				} else if i == anzahl-1 {
+					kSteifigkeit[leftIdx] = 0.75 * (1.0 / l)
+					kSteifigkeit[rightIdx] = 0.75 * (1.0 / l)
+					seiten[leftIdx].M0 = -(q * l * l) / 8.0
+					seiten[rightIdx].M0 = 0.0
+				} else {
+					kSteifigkeit[leftIdx] = 1.0 / l
+					kSteifigkeit[rightIdx] = 1.0 / l
+					seiten[leftIdx].M0 = -(q * l * l) / 12.0
+					seiten[rightIdx].M0 = (q * l * l) / 12.0
+				}
+			}
+
+			if anzahl == 1 {
+				seiten[0].M0 = 0
+				seiten[1].M0 = 0
+			}
+
+			anzahlKnoten := anzahl + 1
+			knoten := make([]Knoten, anzahlKnoten)
+
+			for i := 0; i < anzahlKnoten; i++ {
+				knoten[i].Name = string(rune('A' + i))
+				if i == 0 {
+					knoten[i].SeitenI = []int{0}
+					seiten[0].Mu = 1.0
+				} else if i == anzahlKnoten-1 {
+					knoten[i].SeitenI = []int{anzahlSeiten - 1}
+					seiten[anzahlSeiten-1].Mu = 1.0
+				} else {
+					idxLinks := (i * 2) - 1
+					idxRechts := i * 2
+					knoten[i].SeitenI = []int{idxLinks, idxRechts}
+					sumK := kSteifigkeit[idxLinks] + kSteifigkeit[idxRechts]
+					seiten[idxLinks].Mu = kSteifigkeit[idxLinks] / sumK
+					seiten[idxRechts].Mu = kSteifigkeit[idxRechts] / sumK
+				}
+			}
+
+			for i := range seiten {
+				seiten[i].MTotal = seiten[i].M0
+			}
+
+			maxIterationen := 20
+			epsilon := 0.001
+
+			for iter := 1; iter <= maxIterationen; iter++ {
+				groessteAenderung := 0.0
+				for _, k := range knoten {
+					knotenSumme := 0.0
+					for _, idx := range k.SeitenI {
+						if iter == 1 {
+							knotenSumme += seiten[idx].M0
+						} else {
+							knotenSumme += seiten[idx].MOver
+						}
+					}
+					for _, idx := range k.SeitenI {
+						seiten[idx].MVert = -knotenSumme * seiten[idx].Mu
+						seiten[idx].MTotal += seiten[idx].MVert
+						if math.Abs(seiten[idx].MVert) > groessteAenderung {
+							groessteAenderung = math.Abs(seiten[idx].MVert)
+						}
 					}
 				}
-				for _, idx := range k.SeitenI {
-					seiten[idx].MVert = -knotenSumme * seiten[idx].Mu
-					seiten[idx].MTotal += seiten[idx].MVert
-					if math.Abs(seiten[idx].MVert) > groessteAenderung {
-						groessteAenderung = math.Abs(seiten[idx].MVert)
+				if iter > 1 && groessteAenderung < epsilon {
+					break
+				}
+				for i := range seiten {
+					seiten[i].MOver = 0
+				}
+				for i := range seiten {
+					oppIdx := seiten[i].OppositeId
+					if seiten[oppIdx].Mu != 1.0 {
+						seiten[oppIdx].MOver = seiten[i].MVert * 0.5
 					}
 				}
 			}
-			if iter > 1 && groessteAenderung < epsilon {
-				break
-			}
+
 			for i := range seiten {
-				seiten[i].MOver = 0
-			}
-			for i := range seiten {
-				oppIdx := seiten[i].OppositeId
-				if seiten[oppIdx].Mu != 1.0 {
-					seiten[oppIdx].MOver = seiten[i].MVert * 0.5
+				roundedM := math.Round(seiten[i].MTotal*100) / 100
+				if math.Abs(roundedM) == 0.0 {
+					roundedM = 0.0
 				}
+				seiten[i].MTotal = roundedM
 			}
+
+			data.Berechnet = true
+			data.Seiten = seiten
 		}
 
-		// Runden für die Anzeige im Web
-		for i := range seiten {
-			roundedM := math.Round(seiten[i].MTotal*100) / 100
-			if math.Abs(roundedM) == 0.0 {
-				roundedM = 0.0
-			}
-			seiten[i].MTotal = roundedM
-		}
-
-		tmpl.Execute(w, BerechnungsErgebnis{Laengen: rawLaengen, Resultat: seiten})
+		tmpl.Execute(w, data)
 	})
 
-	// Cloud-Port auslesen
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	fmt.Println("Server läuft online auf Port " + port)
+	fmt.Println("Webserver läuft auf Port " + port)
 	http.ListenAndServe(":"+port, nil)
 }
