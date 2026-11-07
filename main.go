@@ -69,7 +69,7 @@ const htmlTemplate = `
             <div class="error">{{.Fehler}}</div>
         {{end}}
 
-        <form method="POST">
+                <form method="POST">
             <div class="grid">
                 <div class="box">
                     <h3>Eingabeparameter Träger</h3>
@@ -82,32 +82,33 @@ const htmlTemplate = `
                         <input type="text" id="laengen" name="laengen" value="{{.LaengenInput}}" placeholder="z.B. 4.5, 6.0, 4.5" required>
                         <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
                     </div>
+                    <button type="submit">Berechnung starten</button>
+
+                    <!-- Das Ergebnis zieht nun in dieselbe Box und behält exakt die gleiche Breite -->
+                    {{if .Berechnet}}
+                        <h2>Berechnungsergebnisse</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Stabseite</th>
+                                    <th class="r">µ</th>
+                                    <th class="r">Moment (kNm)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range .Seiten}}
+                                <tr>
+                                    <td><strong>{{.Name}}</strong></td>
+                                    <td class="r">{{printf "%.2f" .Mu}}</td>
+                                    <td class="r">{{printf "%.2f" .MTotal}}</td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    {{end}}
                 </div>
             </div>
-            <button type="submit">Berechnung starten</button>
         </form>
-
-        {{if .Berechnet}}
-            <h2>Berechnungsergebnisse</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Stabseite</th>
-                        <th class="r">Verteilungszahl (µ)</th>
-                        <th class="r">Stützmoment (kNm)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .Seiten}}
-                    <tr>
-                        <td><strong>{{.Name}}</strong></td>
-                        <td class="r">{{printf "%.2f" .Mu}}</td>
-                        <td class="r">{{printf "%.2f" .MTotal}}</td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        {{end}}
     </div>
 </body>
 </html>
