@@ -42,7 +42,7 @@ const htmlTemplate = `
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background: #fafafa; color: #333; }
         .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h1 { color: #111; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 0; font-size: 24px; }
-        h2 { color: #111; margin-top: 30px; font-size: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        h2 { color: #111; margin-top: 20px; font-size: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
         h3 { color: #428787; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; font-size: 18px; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
         .box { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
@@ -54,7 +54,7 @@ const htmlTemplate = `
         .error { color: #b91c1c; font-weight: bold; background: #fee2e2; padding: 12px; border-radius: 4px; border: 1px solid #fca5a5; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 14px; }
         th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
-        th { background-color: #428787; color: white; } /* Tabellenkopf in das passende Webspace-Blau geändert */
+        th { background-color: #428787 !important; color: white !important; } /* Erzwingt das originale Blau gegen die website.css */
         tr:nth-child(even) { background-color: #f8fafc; }
         .r { text-align: right; }
         .hint { color: #64748b; font-size: 12px; margin-top: 4px; display: block; font-weight: normal; }
@@ -111,7 +111,7 @@ const htmlTemplate = `
     </div>
 </body>
 </html>
-.
+`
 
 func main() {
 	tmpl := template.Must(template.New("index").Parse(htmlTemplate))
@@ -280,7 +280,6 @@ func main() {
 	if port == "" {
 		port = "10000"
 	}
-
 	fmt.Println("Server läuft online...")
 	http.ListenAndServe("0.0.0.0:"+port, nil)
 }
