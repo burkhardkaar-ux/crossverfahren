@@ -54,7 +54,7 @@ const htmlTemplate = `
         button:hover { background: #336666; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 14px; }
         th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
-        th { background-color: #428787; color: white; } /* Tabellenkopf in Blau geändert */
+        th { background-color: #428787 !important; color: white !important; }
         .table-vb tr:nth-child(even), .table-nb tr:nth-child(even) { background-color: #f8fafc; }
         .table-gesamt tr:nth-child(odd) { background-color: #f8fafc; } /* Zeilen-Hintergrundfarben bei Tabelle 3 vertauscht */
         .r { text-align: right; }
