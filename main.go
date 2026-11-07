@@ -34,85 +34,100 @@ type PageData struct {
 
 const htmlTemplate = `
 <!DOCTYPE html>
-<html lang="de">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Cross-Verfahren Berechnung</title>
+    <title>Massenberechnung Kläranlage</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background: #fafafa; color: #333; }
         .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        h1 { color: #111; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 0; font-size: 24px; }
-        h2 { color: #111; margin-top: 20px; font-size: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
-        h3 { color: #0284c7; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; font-size: 18px; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
+        h2 { color: #111; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 0; }
+        .result-title { margin-top: 40px !important; } /* Vergrößert den Abstand vor den Ergebnissen */
+        h3 { color: #428787; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
         .box { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 14px; font-weight: bold; color: #475569; margin-bottom: 6px; }
-        input[type="number"], input[type="text"] { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
-        button { background: #0284c7; color: white; border: none; padding: 12px; cursor: pointer; font-size: 16px; border-radius: 4px; width: 100%; font-weight: bold; transition: background 0.2s; }
-        button:hover { background: #0369a1; }
-        .error { color: #b91c1c; font-weight: bold; background: #fee2e2; padding: 12px; border-radius: 4px; border: 1px solid #fca5a5; margin-bottom: 20px; }
+        .form-group { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        label { font-size: 14px; font-weight: bold; color: #475569; }
+        input[type="number"] { width: 100px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: right; }
+        button { background: #428787; color: white; border: none; padding: 12px; cursor: pointer; font-size: 16px; border-radius: 4px; width: 100%; font-weight: bold; transition: background 0.2s; }
+        button:hover { background: #336666; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 14px; }
         th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
-        th { background-color: #0f172a; color: white; }
-        tr:nth-child(even) { background-color: #f8fafc; }
+        th { background-color: #428787; color: white; } /* Tabellenkopf in Blau geändert */
+        .table-vb tr:nth-child(even), .table-nb tr:nth-child(even) { background-color: #f8fafc; }
+        .table-gesamt tr:nth-child(odd) { background-color: #f8fafc; } /* Zeilen-Hintergrundfarben bei Tabelle 3 vertauscht */
         .r { text-align: right; }
-        .hint { color: #64748b; font-size: 12px; margin-top: 4px; display: block; font-weight: normal; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>Durchlaufträger-Berechnung (Cross-Verfahren)</h1>
-        <p style="color: #64748b; font-style: italic; margin-top: -5px; margin-bottom: 20px; font-size: 14px;">Systembelastung: Konstante Gleichlast q = 10.0 kN/m</p>
-
-        {{if .Fehler}}
-            <div class="error">{{.Fehler}}</div>
-        {{end}}
-
-                <form method="POST">
+        <h2>Massenberechnung einer Biologischen Kläranlage</h2>
+        <form method="POST">
             <div class="grid">
                 <div class="box">
-                    <h3>Eingabeparameter Träger</h3>
-                    <div class="form-group">
-                        <label for="felder">Anzahl der Felder:</label>
-                        <input type="number" id="felder" name="felder" value="{{if .AnzahlFelder}}{{.AnzahlFelder}}{{else}}3{{end}}" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="laengen">Feldlängen in Metern (mit Komma getrennt):</label>
-                        <input type="text" id="laengen" name="laengen" value="{{.LaengenInput}}" placeholder="z.B. 4.5, 6.0, 4.5" required>
-                        <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
-                    </div>
-                    <button type="submit">Berechnung starten</button>
-
-                    <!-- Das Ergebnis zieht nun in dieselbe Box und behält exakt die gleiche Breite -->
-                    {{if .Berechnet}}
-                        <h2>Berechnungsergebnisse</h2>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Stabseite</th>
-                                    <th class="r">µ</th>
-                                    <th class="r">Moment (kNm)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{range .Seiten}}
-                                <tr>
-                                    <td><strong>{{.Name}}</strong></td>
-                                    <td class="r">{{printf "%.2f" .Mu}}</td>
-                                    <td class="r">{{printf "%.2f" .MTotal}}</td>
-                                </tr>
-                                {{end}}
-                            </tbody>
-                        </table>
-                    {{end}}
+                    <h3>Vorklärbecken (Rechteck)</h3>
+                    <div class="form-group"><label>Länge (m):</label><input type="number" step="0.01" name="laengeVB" value="15.00"></div>
+                    <div class="form-group"><label>Breite (m):</label><input type="number" step="0.01" name="breiteVB" value="6.00"></div>
+                    <div class="form-group"><label>Höhe (m):</label><input type="number" step="0.01" name="hoeheVB" value="4.00"></div>
+                    <div class="form-group"><label>Wandstärke (cm):</label><input type="number" step="0.1" name="wandstaerkeVB" value="35.0"></div>
+                    <div class="form-group"><label>Fundamentstärke (cm):</label><input type="number" step="0.1" name="fundamentdickeVB" value="40.0"></div>
+                    <div class="form-group"><label>Anzahl:</label><input type="number" name="anzahlVB" value="2"></div>
+                </div>
+                <div class="box">
+                    <h3>Nachklärbecken (Rund)</h3>
+                    <div class="form-group"><label>Durchmesser (m):</label><input type="number" step="0.01" name="durchmesserNB" value="20.00"></div>
+                    <div class="form-group"><label>Höhe (m):</label><input type="number" step="0.01" name="hoeheNB" value="3.50"></div>
+                    <div class="form-group"><label>Wandstärke (cm):</label><input type="number" step="0.1" name="wandstaerkeNB" value="30.0"></div>
+                    <div class="form-group"><label>Fundamentstärke (cm):</label><input type="number" step="0.1" name="fundamentdickeNB" value="40.0"></div>
+                    <div class="form-group"><label>Anzahl:</label><input type="number" name="anzahlNB" value="2"></div>
                 </div>
             </div>
+            <button type="submit">Massen berechnen</button>
         </form>
+
+        {{if .Berechnet}}
+        <h2 class="result-title">Berechnungsergebnisse</h2>
+        
+        <h3>1. Rohbaumassen Vorklärbecken</h3>
+        <table class="table-vb">
+            <tr><td>Fassungsvermögen gesamt</td><td class="r">{{printf "%.2f" .VolumenVB}} m³</td></tr>
+            <tr><td>Kubatur Wandbeton</td><td class="r">{{printf "%.2f" .KubaturWandVB}} m³</td></tr>
+            <tr><td>Kubatur Fundamentbeton</td><td class="r">{{printf "%.2f" .KubaturFundamentVB}} m³</td></tr>
+            <tr><td>Fläche Außenwandschalung</td><td class="r">{{printf "%.2f" .AussenwandschalungVB}} m²</td></tr>
+            <tr><td>Fläche Innenwandschalung</td><td class="r">{{printf "%.2f" .InnenwandschalungVB}} m²</td></tr>
+            <tr><td>Fläche Fundamentschalung</td><td class="r">{{printf "%.2f" .FundamentschalungVB}} m²</td></tr>
+            <tr><td>Bewehrungsstahl Wände</td><td class="r">{{printf "%.2f" .WandbewehrungVB}} t</td></tr>
+            <tr><td>Bewehrungsstahl Bodenplatten</td><td class="r">{{printf "%.2f" .BewehrungBodenplatteVB}} t</td></tr>
+        </table>
+
+        <h3>2. Rohbaumassen Nachklärbecken</h3>
+        <table class="table-nb">
+            <tr><td>Fassungsvermögen gesamt</td><td class="r">{{printf "%.2f" .VolumenNB}} m³</td></tr>
+            <tr><td>Kubatur Wandbeton</td><td class="r">{{printf "%.2f" .KubaturWandNB}} m³</td></tr>
+            <tr><td>Kubatur Fundamentbeton</td><td class="r">{{printf "%.2f" .KubaturFundamentNB}} m³</td></tr>
+            <tr><td>Fläche Außenwandschalung (Rund)</td><td class="r">{{printf "%.2f" .AussenwandschalungNB}} m²</td></tr>
+            <tr><td>Fläche Innenwandschalung (Rund)</td><td class="r">{{printf "%.2f" .InnenwandschalungNB}} m²</td></tr>
+            <tr><td>Fläche Fundamentschalung</td><td class="r">{{printf "%.2f" .FundamentschalungNB}} m²</td></tr>
+            <tr><td>Bewehrungsstahl Wände</td><td class="r">{{printf "%.2f" .WandbewehrungNB}} t</td></tr>
+            <tr><td>Bewehrungsstahl Bodenplatten</td><td class="r">{{printf "%.2f" .BewehrungBodenplatteNB}} t</td></tr>
+        </table>
+
+        <h3>3. Gesamtrohbaumassen der Kläranlage</h3>
+        <table class="table-gesamt">
+            <tr><th>Gesamtposition</th><th class="r">Masse / Einheit</th></tr>
+            <tr><td>Gesamtes Fassungsvermögen</td><td class="r">{{printf "%.2f" .GesamtVolumen}} m³</td></tr>
+            <tr><td>Die gesamte Kubatur des Betons</td><td class="r">{{printf "%.2f" .GesamtKubaturBeton}} m³</td></tr>
+            <tr><td>Gesamte Fläche gerade Wandschalung (VB)</td><td class="r">{{printf "%.2f" .GesamtWandSchalungGerad}} m²</td></tr>
+            <tr><td>Gesamte Fläche Rundschalung (NB)</td><td class="r">{{printf "%.2f" .GesamtWandSchalungRund}} m²</td></tr>
+            <tr><td>Gesamte Fläche Fundamentschalung</td><td class="r">{{printf "%.2f" .GesamtFundamentSchalung}} m²</td></tr>
+            <tr><td>Gesamtmenge Bewehrungsstahl</td><td class="r">{{printf "%.2f" .GesamtBewehrung}} t</td></tr>
+        </table>
+        {{end}}
     </div>
 </body>
 </html>
-`
+
 
 func main() {
 	tmpl := template.Must(template.New("index").Parse(htmlTemplate))
