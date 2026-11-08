@@ -85,7 +85,7 @@ const htmlTemplate = `
                     <button type="submit">Berechnung starten</button>
 
                     {{if .Berechnet}}
-                        <h2>Berechnungsergebnisse</h2>
+                        <h2 class="result-title">Berechnungsergebnisse</h2>
                         <table>
                             <thead>
                                 <tr>
