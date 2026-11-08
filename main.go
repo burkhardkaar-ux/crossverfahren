@@ -38,13 +38,11 @@ const htmlTemplate = `
 
 <head>
     <meta charset="UTF-8">
-    <!-- WICHTIG: Verhindert das automatische Hereinzoomen beim Laden der Seite auf Smartphones -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berechnung Durchlaufträger</title>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            /* position: fixed; entfernt, damit Scrollen auf Handys funktioniert */
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
@@ -114,8 +112,6 @@ const htmlTemplate = `
             width: 100%;
             padding: 8px;
             border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            /* WICHTIG: 16px verhindert den automatischen iOS-Eingabe-Zoom beim Antippen */
             font-size: 16px;
             box-sizing: border-box;
         }
@@ -210,7 +206,6 @@ const htmlTemplate = `
                         <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
                     </div>
 
-                    <!-- Der Button erhält eine ID und ist standardmäßig deaktiviert (disabled) -->
                     <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
 
                     {{if .Berechnet}}
@@ -238,9 +233,7 @@ const htmlTemplate = `
             </div>
         </form>
 
-        <!-- Ergänze diese CSS-Styles (entweder in deiner CSS-Datei oder im <style>-Block) -->
         <style>
-            /* Standard-Design für den aktiven Button */
             button {
                 background: #428787;
                 color: white;
@@ -258,12 +251,10 @@ const htmlTemplate = `
                 background: #336666;
             }
 
-            /* Automatisches Ausgrauen, wenn der Button deaktiviert ist */
             button:disabled {
                 background: #cbd5e1;
                 /* Ein helles Grau */
                 color: #94a3b8;
-                /* Dunklerer Text für Lesbarkeit im Grau */
                 cursor: not-allowed;
                 /* Zeigt ein "Verboten"-Symbol beim Drüberfahren */
                 opacity: 0.7;
