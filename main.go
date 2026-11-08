@@ -205,37 +205,10 @@ const htmlTemplate = `
                         <input type="text" id="laengen" name="laengen" value="{{.LaengenInput}}" placeholder="z.B. 4.5, 6.0, 4.5" required>
                         <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
                     </div>
-
+                    <!-- ID und standardmäßig disabled hinzugefügt -->
                     <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
-
-                    {{if .Berechnet}}
-                    <h2 class="result-title">Berechnungsergebnisse</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Stabseite</th>
-                                <th class="r">µ</th>
-                                <th class="r">Moment (kNm)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range .Seiten}}
-                            <tr>
-                                <td><strong>{{.Name}}</strong></td>
-                                <td class="r">{{printf "%.2f" .Mu}}</td>
-                                <td class="r">{{printf "%.2f" .MTotal}}</td>
-                            </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
-                    {{end}}
-                </div>
-            </div>
-            <!-- ID und standardmäßig disabled hinzugefügt -->
-            <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
         </form>
 
-        <!-- Dieser kleine JavaScript-Block steuert die Freischaltung live beim Tippen -->
         <script>
             const form = document.getElementById('calcForm');
             const button = document.getElementById('submitBtn');
@@ -264,11 +237,32 @@ const htmlTemplate = `
 
         </script>
 
+        {{if .Berechnet}}
+        <h2 class="result-title">Berechnungsergebnisse</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Stabseite</th>
+                    <th class="r">µ</th>
+                    <th class="r">Moment (kNm)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Seiten}}
+                <tr>
+                    <td><strong>{{.Name}}</strong></td>
+                    <td class="r">{{printf "%.2f" .Mu}}</td>
+                    <td class="r">{{printf "%.2f" .MTotal}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        {{end}}
     </div>
-</body>
-
-</html>
-
+    <style>
+        </div>
+        </body>
+        </html>
 
 `
 
