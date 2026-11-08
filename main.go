@@ -62,8 +62,8 @@ const htmlTemplate = `
 </head>
 <body>
     <div class="card">
-        <h1>Durchlaufträger-Berechnung (Cross-Verfahren)</h1>
-        <p style="color: #64748b; font-style: italic; margin-top: -5px; margin-bottom: 20px; font-size: 14px;">Systembelastung: Konstante Gleichlast q = 10.0 kN/m</p>
+        <h1>Durchlaufträger nach dem Cossverfahren</h1>
+        <p style="color: #428787; font-style: italic; margin-top: -5px; margin-bottom: 20px; font-size: 14px;">Systembelastung: Konstante Gleichlast q = 10.0 kN/m</p>
 
         {{if .Fehler}}
             <div class="error">{{.Fehler}}</div>
@@ -135,7 +135,7 @@ func main() {
 
 			var laengen []float64
 			var aktuellesZahl string
-			
+
 			for _, char := range laengenStr + "," {
 				if char == ',' || char == ';' || char == ' ' {
 					if aktuellesZahl != "" {
