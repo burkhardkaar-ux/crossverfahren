@@ -231,36 +231,9 @@ const htmlTemplate = `
                     {{end}}
                 </div>
             </div>
+            <!-- ID und standardmäßig disabled hinzugefügt -->
+            <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
         </form>
-
-        <style>
-            button {
-                background: #428787;
-                color: white;
-                border: none;
-                padding: 12px;
-                cursor: pointer;
-                font-size: 16px;
-                border-radius: 4px;
-                width: 100%;
-                font-weight: bold;
-                transition: all 0.2s;
-            }
-
-            button:hover:not(:disabled) {
-                background: #336666;
-            }
-
-            button:disabled {
-                background: #cbd5e1;
-                /* Ein helles Grau */
-                color: #94a3b8;
-                cursor: not-allowed;
-                /* Zeigt ein "Verboten"-Symbol beim Drüberfahren */
-                opacity: 0.7;
-            }
-
-        </style>
 
         <!-- Dieser kleine JavaScript-Block steuert die Freischaltung live beim Tippen -->
         <script>
@@ -295,6 +268,7 @@ const htmlTemplate = `
 </body>
 
 </html>
+
 
 `
 
