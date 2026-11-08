@@ -264,23 +264,30 @@ const htmlTemplate = `
 
         <!-- Dieser kleine JavaScript-Block steuert die Freischaltung live beim Tippen -->
         <script>
-            const form = document.getElementById('traegerForm');
-            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('calcForm');
+            const button = document.getElementById('submitBtn');
+            const inputs = form.querySelectorAll('input[required]');
 
-            function pruefeFormular() {
-                // checkValidity() prüft automatisch alle Felder mit "required"
-                if (form.checkValidity()) {
-                    submitBtn.removeAttribute('disabled');
+            function checkInputs() {
+                // Prüft, ob ALLE erforderlichen Felder gültig ausgefüllt sind
+                const allFilled = form.checkValidity();
+                button.disabled = !allFilled;
+
+                // Optisches Feedback (Ausgrauen)
+                if (allFilled) {
+                    button.style.backgroundColor = '#428787';
+                    button.style.cursor = 'pointer';
                 } else {
-                    submitBtn.setAttribute('disabled', 'true');
+                    button.style.backgroundColor = '#94a3b8;'; // Grau
+                    button.style.cursor = 'not-allowed';
                 }
             }
 
-            // Lauscht auf jede Eingabe in den Formularfeldern
-            form.addEventListener('input', pruefeFormular);
+            // Bei jeder Tastatureingabe oder Änderung prüfen
+            form.addEventListener('input', checkInputs);
 
-            // Einmal beim Laden ausführen (falls nach Berechnung bereits Werte drinstehen)
-            pruefeFormular();
+            // Einmaliger Check beim Laden der Seite (falls Werte vom Go-Backend drinstehen)
+            document.addEventListener('DOMContentLoaded', checkInputs);
 
         </script>
 
