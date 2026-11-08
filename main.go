@@ -261,26 +261,30 @@ const htmlTemplate = `
         </style>
 
         <!-- Dieser kleine JavaScript-Block steuert die Freischaltung live beim Tippen -->
-        <script>
-            const form = document.getElementById('traegerForm');
-            const submitBtn = document.getElementById('submitBtn');
+        <!-- Dieser JavaScript-Block steuert die Freischaltung live beim Tippen -->
+<script>
+    // Nutzt die korrekte ID 'calcForm' Ihres Formulars
+    const form = document.getElementById('calcForm');
+    const submitBtn = document.getElementById('submitBtn');
 
-            function pruefeFormular() {
-                // checkValidity() prüft automatisch alle Felder mit "required"
-                if (form.checkValidity()) {
-                    submitBtn.removeAttribute('disabled');
-                } else {
-                    submitBtn.setAttribute('disabled', 'true');
-                }
-            }
+    function pruefeFormular() {
+        // checkValidity() prüft automatisch alle Felder mit "required"
+        if (form && form.checkValidity()) {
+            submitBtn.removeAttribute('disabled');
+        } else {
+            submitBtn.setAttribute('disabled', 'true');
+        }
+    }
 
-            // Lauscht auf jede Eingabe in den Formularfeldern
-            form.addEventListener('input', pruefeFormular);
+    if (form) {
+        // Lauscht auf jede Eingabe in den Formularfeldern
+        form.addEventListener('input', pruefeFormular);
+        
+        // Einmal beim Laden ausführen (falls Go bereits Werte mitgegeben hat)
+        pruefeFormular();
+    }
+</script>
 
-            // Einmal beim Laden ausführen (falls nach Berechnung bereits Werte drinstehen)
-            pruefeFormular();
-
-        </script>
 
         {{if .Berechnet}}
         <h2 class="result-title">Berechnungsergebnisse</h2>
