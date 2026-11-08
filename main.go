@@ -69,13 +69,12 @@ const htmlTemplate = `
             <div class="error">{{.Fehler}}</div>
         {{end}}
 
-        <form method="POST">
+        <form method="POST" id="traegerForm">
     <div class="grid">
         <div class="box">
             <h3>Eingabeparameter Träger</h3>
             <div class="form-group">
                 <label for="felder">Anzahl der Felder:</label>
-                <!-- value wird nur befüllt, wenn bereits berechnet wurde; die 3 ist jetzt der graue Platzhalter -->
                 <input type="number" id="felder" name="felder" placeholder="3" value="{{if .Berechnet}}{{.AnzahlFelder}}{{end}}" min="1" required>
             </div>
             <div class="form-group">
@@ -83,7 +82,9 @@ const htmlTemplate = `
                 <input type="text" id="laengen" name="laengen" value="{{.LaengenInput}}" placeholder="z.B. 4.5, 6.0, 4.5" required>
                 <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
             </div>
-            <button type="submit">Berechnung starten</button>
+            
+            <!-- Der Button erhält eine ID und ist standardmäßig deaktiviert (disabled) -->
+            <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
 
             {{if .Berechnet}}
                 <h2 class="result-title">Berechnungsergebnisse</h2>
@@ -109,6 +110,55 @@ const htmlTemplate = `
         </div>
     </div>
 </form>
+
+<!-- Ergänze diese CSS-Styles (entweder in deiner CSS-Datei oder im <style>-Block) -->
+<style>
+    /* Standard-Design für den aktiven Button */
+    button { 
+        background: #428787; 
+        color: white; 
+        border: none; 
+        padding: 12px; 
+        cursor: pointer; 
+        font-size: 16px; 
+        border-radius: 4px; 
+        width: 100%; 
+        font-weight: bold; 
+        transition: all 0.2s; 
+    }
+    button:hover:not(:disabled) { 
+        background: #336666; 
+    }
+    
+    /* Automatisches Ausgrauen, wenn der Button deaktiviert ist */
+    button:disabled {
+        background: #cbd5e1; /* Ein helles Grau */
+        color: #94a3b8;      /* Dunklerer Text für Lesbarkeit im Grau */
+        cursor: not-allowed; /* Zeigt ein "Verboten"-Symbol beim Drüberfahren */
+        opacity: 0.7;
+    }
+</style>
+
+<!-- Dieser kleine JavaScript-Block steuert die Freischaltung live beim Tippen -->
+<script>
+    const form = document.getElementById('traegerForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function pruefeFormular() {
+        // checkValidity() prüft automatisch alle Felder mit "required"
+        if (form.checkValidity()) {
+            submitBtn.removeAttribute('disabled');
+        } else {
+            submitBtn.setAttribute('disabled', 'true');
+        }
+    }
+
+    // Lauscht auf jede Eingabe in den Formularfeldern
+    form.addEventListener('input', pruefeFormular);
+    
+    // Einmal beim Laden ausführen (falls nach Berechnung bereits Werte drinstehen)
+    pruefeFormular();
+</script>
 
     </div>
 </body>
