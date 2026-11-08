@@ -47,7 +47,7 @@ const htmlTemplate = `
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
-            background: #fafafa;
+            background: #000000;
             color: #333;
         }
 
