@@ -206,6 +206,8 @@ const htmlTemplate = `
                         <input type="text" id="laengen" name="laengen" value="{{.LaengenInput}}" placeholder="z.B. 4.5, 6.0, 4.5" required>
                         <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
                     </div>
+                    
+            <div><h5>&copy; Ing. Burkhard Kaar, 8580 Köflach, Austria</h5></div>
 
                     <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
 
@@ -234,7 +236,6 @@ const htmlTemplate = `
             </div>
         </form>
 
-        <!-- Ergänze diese CSS-Styles (entweder in deiner CSS-Datei oder im <style>-Block) -->
         <style>
             /* Standard-Design für den aktiven Button */
             button {
