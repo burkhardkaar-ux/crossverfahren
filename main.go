@@ -205,64 +205,92 @@ const htmlTemplate = `
                         <input type="text" id="laengen" name="laengen" value="{{.LaengenInput}}" placeholder="z.B. 4.5, 6.0, 4.5" required>
                         <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
                     </div>
-                    <!-- ID und standardmäßig disabled hinzugefügt -->
+
                     <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
+
+                    {{if .Berechnet}}
+                    <h2 class="result-title">Berechnungsergebnisse</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Stabseite</th>
+                                <th class="r">µ</th>
+                                <th class="r">Moment (kNm)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Seiten}}
+                            <tr>
+                                <td><strong>{{.Name}}</strong></td>
+                                <td class="r">{{printf "%.2f" .Mu}}</td>
+                                <td class="r">{{printf "%.2f" .MTotal}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                    {{end}}
+                </div>
+            </div>
         </form>
 
+        <style>
+            /* Standard-Design für den aktiven Button */
+            button {
+                background: #428787;
+                color: white;
+                border: none;
+                padding: 12px;
+                cursor: pointer;
+                font-size: 16px;
+                border-radius: 4px;
+                width: 100%;
+                font-weight: bold;
+                transition: all 0.2s;
+            }
+
+            button:hover:not(:disabled) {
+                background: #336666;
+            }
+
+            /* Automatisches Ausgrauen, wenn der Button deaktiviert ist */
+            button:disabled {
+                background: #cbd5e1;
+                /* Ein helles Grau */
+                color: #94a3b8;
+                /* Dunklerer Text für Lesbarkeit im Grau */
+                cursor: not-allowed;
+                /* Zeigt ein "Verboten"-Symbol beim Drüberfahren */
+                opacity: 0.7;
+            }
+
+        </style>
+
+        <!-- Dieser kleine JavaScript-Block steuert die Freischaltung live beim Tippen -->
         <script>
-            const form = document.getElementById('calcForm');
-            const button = document.getElementById('submitBtn');
-            const inputs = form.querySelectorAll('input[required]');
+            const form = document.getElementById('traegerForm');
+            const submitBtn = document.getElementById('submitBtn');
 
-            function checkInputs() {
-                // Prüft, ob ALLE erforderlichen Felder gültig ausgefüllt sind
-                const allFilled = form.checkValidity();
-                button.disabled = !allFilled;
-
-                // Optisches Feedback (Ausgrauen)
-                if (allFilled) {
-                    button.style.backgroundColor = '#428787';
-                    button.style.cursor = 'pointer';
+            function pruefeFormular() {
+                // checkValidity() prüft automatisch alle Felder mit "required"
+                if (form.checkValidity()) {
+                    submitBtn.removeAttribute('disabled');
                 } else {
-                    button.style.backgroundColor = '#94a3b8;'; // Grau
-                    button.style.cursor = 'not-allowed';
+                    submitBtn.setAttribute('disabled', 'true');
                 }
             }
 
-            // Bei jeder Tastatureingabe oder Änderung prüfen
-            form.addEventListener('input', checkInputs);
+            // Lauscht auf jede Eingabe in den Formularfeldern
+            form.addEventListener('input', pruefeFormular);
 
-            // Einmaliger Check beim Laden der Seite (falls Werte vom Go-Backend drinstehen)
-            document.addEventListener('DOMContentLoaded', checkInputs);
+            // Einmal beim Laden ausführen (falls nach Berechnung bereits Werte drinstehen)
+            pruefeFormular();
 
         </script>
 
-        {{if .Berechnet}}
-        <h2 class="result-title">Berechnungsergebnisse</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Stabseite</th>
-                    <th class="r">µ</th>
-                    <th class="r">Moment (kNm)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{range .Seiten}}
-                <tr>
-                    <td><strong>{{.Name}}</strong></td>
-                    <td class="r">{{printf "%.2f" .Mu}}</td>
-                    <td class="r">{{printf "%.2f" .MTotal}}</td>
-                </tr>
-                {{end}}
-            </tbody>
-        </table>
-        {{end}}
     </div>
-    <style>
-        </div>
-        </body>
-        </html>
+</body>
+
+</html>
 
 `
 
