@@ -54,7 +54,7 @@ const htmlTemplate = `
         .card {
             background: white;
             padding: 25px;
-            border-radius: 8px;
+            border-radius: 5px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
@@ -92,7 +92,7 @@ const htmlTemplate = `
         .box {
             background: #f8fafc;
             padding: 15px;
-            border-radius: 6px;
+            border-radius: 5px;
             border: 1px solid #e2e8f0;
         }
 
@@ -207,7 +207,7 @@ const htmlTemplate = `
                         <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
                     </div>
                     
-            <div><h5>&copy; Ing. Burkhard Kaar, 8580 Köflach, Austria</h5></div>
+            <div><h6>&copy; Ing. Burkhard Kaar, 8580 Köflach, Austria</h6></div>
 
                     <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
 
