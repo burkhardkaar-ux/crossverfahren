@@ -207,7 +207,7 @@ const htmlTemplate = `
                         <span class="hint">Gib die Längen der Felder der Reihe nach ein (z.B. 5, 4.5, 5)</span>
                     </div>
                     
-            <div><h6>&copy; Ing. Burkhard Kaar, 8580 Köflach, Austria</h6></div>
+            <div><h6>&copy; Ing. Burkhard Kaar - Studienprojekt imperative Programmierung, Berechnung eines Durchlaufträgers nach dem Cross-Verfahren</h6></div>
 
                     <button type="submit" id="submitBtn" disabled>Berechnung starten</button>
 
