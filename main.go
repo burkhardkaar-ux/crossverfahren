@@ -186,7 +186,7 @@ const htmlTemplate = `
 
 <body>
     <div class="card">
-        <h1>Durchlaufträger nach dem Cossverfahren</h1>
+        <h1>Berechnungsprogramm Durchlaufträger</h1>
         <p style="color: #428787; font-style: italic; margin-top: -5px; margin-bottom: 20px; font-size: 14px;">Systembelastung: Konstante Gleichlast q = 10.0 kN/m</p>
 
         {{if .Fehler}}
