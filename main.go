@@ -169,14 +169,18 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		// Schritt B: Fortleitung
+		// SCHRITT B: Fortleitung
 		for i := range seiten {
 			seiten[i].MRest = 0.0
 		}
 		for i := range seiten {
 			oppIdx := seiten[i].OppositeId
-			seiten[oppIdx].MRest = mAuszugleichen[i] * 0.5
+			fortleitung := mAuszugleichen[i] * 0.5
+
+			seiten[oppIdx].MRest = fortleitung
+			seiten[oppIdx].MTotal += fortleitung
 		}
+
 	}
 
 	// Bereinigung für die Anzeige (-0.00 korrigieren)
