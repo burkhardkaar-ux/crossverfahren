@@ -47,7 +47,7 @@ const htmlTemplate = `<!DOCTYPE html>
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
-            background: rgba(0, 0, 0, 1) !important;
+            background: rgba(15, 23, 42, 1) !important;
             color: #333;
         }
 
